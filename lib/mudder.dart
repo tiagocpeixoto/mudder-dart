@@ -26,16 +26,16 @@ class SymbolTable {
   bool _isPrefixCode;
 
   SymbolTable({
-    List<String> symbolsArr,
-    String symbolsStr,
+    String symbolsString,
+    List<String> symbolsArray,
     Map<String, int> symbolsMap,
   }) {
     // Condition the input `symbolsArr`
-    if (symbolsArr != null) {
-      num2sym = symbolsArr;
+    if (symbolsArray != null) {
+      num2sym = symbolsArray;
     } else {
-      if (symbolsStr != null && symbolsStr.isNotEmpty) {
-        num2sym = symbolsStr.split('');
+      if (symbolsString != null && symbolsString.isNotEmpty) {
+        num2sym = symbolsString.split('');
       } else {
         throw Exception('symbolsArr and symbolsStr must not be null or empty');
       }
@@ -69,33 +69,33 @@ class SymbolTable {
   }
 
   List<String> mudder({
-    dynamic prev,
-    dynamic next,
+    dynamic start,
+    dynamic end,
     int numStrings,
     int base,
     int numDivisions,
   }) {
-    if (prev != null && prev is! String && prev is! List<String>) {
-      throw Exception('prev param must be of type String or List<String>');
+    if (start != null && start is! String && start is! List<String>) {
+      throw Exception('start param must be of type String or List<String>');
     }
 
-    if (next != null && next is! String && next is! List<String>) {
-      throw Exception('next param must be of type String or List<String>');
+    if (end != null && end is! String && end is! List<String>) {
+      throw Exception('end param must be of type String or List<String>');
     }
 
-    prev ??= num2sym[0];
-    next ??= JSShim.repeat(num2sym[num2sym.length - 1], prev.length + 6);
+    start ??= num2sym[0];
+    end ??= JSShim.repeat(num2sym[num2sym.length - 1], start.length + 6);
     numStrings ??= 1;
     base ??= maxBase;
     numDivisions ??= numStrings + 1;
 
-    final truncated = truncateLexHigher(prev, next);
-    prev = truncated[0];
-    next = truncated[1];
-    final prevDigits = stringToDigits(prev);
-    final nextDigits = stringToDigits(next);
+    final truncated = truncateLexHigher(start, end);
+    start = truncated[0];
+    end = truncated[1];
+    final prevDigits = stringToDigits(start);
+    final nextDigits = stringToDigits(end);
     final intermediateDigits =
-    longLinspace(prevDigits, nextDigits, base, numStrings, numDivisions);
+        longLinspace(prevDigits, nextDigits, base, numStrings, numDivisions);
     final finalDigits = intermediateDigits
         .map((v) => v.res..addAll(roundFraction(v.rem, v.den, base)))
         .toList();
@@ -135,7 +135,7 @@ class SymbolTable {
       if (_isPrefixCode == null || !_isPrefixCode) {
         throw Exception(
             'parsing string without prefix code is unsupported. Pass in array '
-                'of stringy symbols?');
+            'of stringy symbols?');
       }
       final re = RegExp('(${List.from(sym2num.keys).join('|')})');
       return re
@@ -171,11 +171,10 @@ class SymbolTable {
   }
 }
 
-
-final base10 = SymbolTable(symbolsArr: iter('0', 10));
+final base10 = SymbolTable(symbolsArray: iter('0', 10));
 
 final base62 = SymbolTable(
-    symbolsArr: iter('0', 10)..addAll(iter('A', 26))..addAll(iter('a', 26)));
+    symbolsArray: iter('0', 10)..addAll(iter('A', 26))..addAll(iter('a', 26)));
 
 // Base36 should use lowercase since that’s what Number.toString outputs.
 final _base36arr = iter('0', 10)..addAll(iter('a', 26));
@@ -184,11 +183,11 @@ final _base36vals = range(10)
   ..addAll(range(26).map((i) => i + 10))
   ..addAll(range(26).map((i) => i + 10));
 final base36 = SymbolTable(
-    symbolsArr: _base36arr,
+    symbolsArray: _base36arr,
     symbolsMap: Map.fromEntries(zip(_base36keys, _base36vals)));
 
 final alphabet = SymbolTable(
-  symbolsArr: iter('a', 26),
+  symbolsArray: iter('a', 26),
   symbolsMap: Map.fromEntries(
     zip(
       iter('a', 26)..addAll(iter('A', 26)),

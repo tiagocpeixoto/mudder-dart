@@ -68,8 +68,8 @@ List<int> rightPad(List<int> digits, int finalLength, [int val]) {
   return digits.toList()..addAll(List.filled(padLen, val ?? 0));
 }
 
-List<MapEntry<String, int>> zip(List<String> a, List<int> b) {
-  return List.generate(a.length, (i) => MapEntry(a[i], b[i]));
+List<MapEntry<String, int>> zip(List<String> start, List<int> end) {
+  return List.generate(start.length, (i) => MapEntry(start[i], end[i]));
 }
 
 bool allLessThan(List<String> arr) {
@@ -99,38 +99,38 @@ Div longDiv(List<int> numeratorArr, int den, int base) {
 const defaultList = <int>[];
 
 ///
-/// @param {number[]} a larger number, as digits array
-/// @param {number[]} b smaller number, as digits array
+/// @param {number[]} start larger number, as digits array
+/// @param {number[]} end smaller number, as digits array
 /// @param {number} base
-/// @param {[number, number]} rem `a` and `b`'s remainders
+/// @param {[number, number]} rem `start` and `end`'s remainders
 /// @param {number} den denominator for the remainders
 /// @returns {{res: number[], den: number, rem: number}}
 Div longSubSameLen(
-  List<int> a,
-  List<int> b,
+  List<int> start,
+  List<int> end,
   int base, [
   List<int> rem = defaultList,
   int den = 0,
 ]) {
-  if (a.length != b.length) {
+  if (start.length != end.length) {
     throw Exception('same length arrays needed');
   }
   if (rem.isNotEmpty && rem.length != 2) {
     throw Exception('zero or two remainders expected');
   }
-  a = [...a]; // pre-emptively copy
+  start = [...start]; // pre-emptively copy
   if (rem.isNotEmpty) {
-    a = a..add(rem[0]);
-    b = [...b]..add(rem[1]);
+    start = start..add(rem[0]);
+    end = [...end]..add(rem[1]);
   }
-  final ret = List.filled(a.length, 0);
+  final ret = List.filled(start.length, 0);
 
   // this is a LOOP LABEL! https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/label
   OUTER:
-  for (var i = a.length - 1; i >= 0; --i) {
+  for (var i = start.length - 1; i >= 0; --i) {
     // console.log({a, ret})
-    if (a[i] >= b[i]) {
-      ret[i] = a[i] - b[i];
+    if (start[i] >= end[i]) {
+      ret[i] = start[i] - end[i];
       continue;
     }
     if (i == 0) {
@@ -138,16 +138,17 @@ Div longSubSameLen(
     }
     // look for a digit to the left to borrow from
     for (var j = i - 1; j >= 0; --j) {
-      if (a[j] > 0) {
+      if (start[j] > 0) {
         // found a non-zero digit. Decrement it
-        a[j]--;
+        start[j]--;
         // increment digits to its right by `base-1`
         for (var k = j + 1; k < i; ++k) {
-          a[k] += base - 1;
+          start[k] += base - 1;
         }
         // until you reach the digit you couldn't subtract
-        ret[i] =
-            a[i] + (rem.isNotEmpty && i == a.length - 1 ? den : base) - b[i];
+        ret[i] = start[i] +
+            (rem.isNotEmpty && i == start.length - 1 ? den : base) -
+            end[i];
         continue OUTER;
       }
     }
@@ -166,21 +167,21 @@ Div longSubSameLen(
 }
 
 ///
-/// @param {number[]} a array of digits
-/// @param {number[]} b array of digits
+/// @param {number[]} start array of digits
+/// @param {number[]} end array of digits
 /// @param {number} base
 /// @param {number} rem remainder
 /// @param {number} den denominator under remainder
-Div longAddSameLen(List<int> a, List<int> b, int base, int rem, int den) {
-  if (a.length != b.length) {
+Div longAddSameLen(List<int> start, List<int> end, int base, int rem, int den) {
+  if (start.length != end.length) {
     throw Exception('same length arrays needed');
   }
-  var carry = rem >= den, res = [...b];
+  var carry = rem >= den, res = end.toList();
   if (carry) {
     rem -= den;
   }
-  JSShim.reduceRight(a, (_, ai, index, list) {
-    final result = ai + b[index] + (carry ? 1 : 0);
+  JSShim.reduceRight(start, (_, ai, index, list) {
+    final result = ai + end[index] + (carry ? 1 : 0);
     carry = result >= base;
     res[index] = carry ? result - base : result;
     return null;
@@ -188,26 +189,26 @@ Div longAddSameLen(List<int> a, List<int> b, int base, int rem, int den) {
   return Div(res: res, rem: rem, den: den, carry: carry);
 }
 
-/// Returns `(a + (b-a)/M*n)` for n=[1, 2, ..., N], where `N<M`.
-/// @param {number[]} a left array of digits
-/// @param {number[]} b right array of digits
+/// Returns `(start + (end-start)/M*n)` for n=[1, 2, ..., N], where `N<M`.
+/// @param {number[]} start left array of digits
+/// @param {number[]} end right array of digits
 /// @param {number} base
 /// @param {number} N number of linearly-spaced numbers to return
 /// @param {number} M number of subdivisions to make, `M>N`
 /// @returns {{res: number[]; rem: number; den: number;}[]} `N` numbers
-List<Div> longLinspace(List<int> prev, List<int> next, int base, int N, int M) {
-  if (prev.length < next.length) {
-    prev = rightPad(prev, next.length);
-  } else if (next.length < prev.length) {
-    next = rightPad(next, prev.length);
+List<Div> longLinspace(List<int> start, List<int> end, int base, int N, int M) {
+  if (start.length < end.length) {
+    start = rightPad(start, end.length);
+  } else if (end.length < start.length) {
+    end = rightPad(end, start.length);
   }
-  if (prev.length == next.length &&
-      JSShim.every(prev, (prevElem, index) => prevElem == next[index])) {
+  if (start.length == end.length &&
+      JSShim.every(start, (prevElem, index) => prevElem == end[index])) {
     throw Exception('Start and end strings lexicographically inseparable');
   }
-  final prevDiv = longDiv(prev, M, base);
-  final nextDiv = longDiv(next, M, base);
-  var prevPrev = longSubSameLen(prev, prevDiv.res, base, [0, prevDiv.rem], M);
+  final prevDiv = longDiv(start, M, base);
+  final nextDiv = longDiv(end, M, base);
+  var prevPrev = longSubSameLen(start, prevDiv.res, base, [0, prevDiv.rem], M);
   var nextPrev = nextDiv;
   final ret = <Div>[];
   for (var n = 1; n <= N; ++n) {
@@ -233,15 +234,15 @@ List<int> chopDigits(List<int> rock, List<int> water) {
   return water;
 }
 
-bool lexicographicLessThanArray(List<int> a, List<int> b) {
-  final n = min(a.length, b.length);
+bool lexicographicLessThanArray(List<int> start, List<int> end) {
+  final n = min(start.length, end.length);
   for (var i = 0; i < n; i++) {
-    if (a[i] == b[i]) {
+    if (start[i] == end[i]) {
       continue;
     }
-    return a[i] < b[i];
+    return start[i] < end[i];
   }
-  return a.length < b.length;
+  return start.length < end.length;
 }
 
 List<List<int>> chopSuccessiveDigits(List<List<int>> digits) {

@@ -6,7 +6,6 @@ homepage: https://github.com/tiagocpeixoto/mudder-dart
 documentation: https://github.com/tiagocpeixoto/mudder-dart
 environment:
   sdk: '>=2.10.0 <3.0.0'
-dependencies:
 
 dev_dependencies:
   test: '>=1.15.0 <2.0.0'

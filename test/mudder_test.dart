@@ -5,17 +5,24 @@ import 'package:test/test.dart';
 
 void main() {
   group('mudderjs original tests', () {
+    test('readme', () {
+      final hex = SymbolTable(symbolsString: '0123456789abcdef');
+      final hexStrings = hex.mudder(start: 'ffff', end: 'fe0f', numStrings: 3);
+      print(hexStrings);
+    });
+
+
     test('Reasonable values', () {
-      final decimal = SymbolTable(symbolsStr: '0123456789');
-      final res = decimal.mudder(prev: '1', next: '2');
+      final decimal = SymbolTable(symbolsString: '0123456789');
+      final res = decimal.mudder(start: '1', end: '2');
       expect(res[0], "15");
     });
 
     test('Reversing start/end reverses outputs: controlled cases', () {
-      final decimal = SymbolTable(symbolsStr: '0123456789');
+      final decimal = SymbolTable(symbolsString: '0123456789');
       for (var num in List.generate(12, (i) => i + 1)) {
-        final fwd = decimal.mudder(prev: '1', next: '2', numStrings: num);
-        final rev = decimal.mudder(prev: '2', next: '1', numStrings: num);
+        final fwd = decimal.mudder(start: '1', end: '2', numStrings: num);
+        final rev = decimal.mudder(start: '2', end: '1', numStrings: num);
         expect(rev.toList().reversed.join(''), fwd.join(''));
         expect(
             fwd.fold(true, (accum, curr) {
@@ -51,10 +58,10 @@ void main() {
         "V": 5,
         "v": 5
       });
-      final romanMap = SymbolTable(symbolsArr: arr, symbolsMap: map);
+      final romanMap = SymbolTable(symbolsArray: arr, symbolsMap: map);
 
       expect(
-        romanMap.mudder(prev: ['i'], next: ['ii'], numStrings: 2),
+        romanMap.mudder(start: ['i'], end: ['ii'], numStrings: 2),
         ["III", "IIV"],
       );
     });
@@ -67,7 +74,7 @@ void main() {
     test('Fixes #1: repeated recursive subdivision', () {
       var right = 'z';
       for (var i = 0; i < 50; i++) {
-        var newRes = alphabet.mudder(prev: 'a', next: right)[0];
+        var newRes = alphabet.mudder(start: 'a', end: right)[0];
         expect('a' != newRes, true);
         expect(right != newRes, true);
         right = newRes;
@@ -78,12 +85,12 @@ void main() {
     test('Fixes #2: throws when fed lexicographically-adjacent strings', () {
       for (var i = 2; i < 10; i++) {
         expect(
-                () =>
-                alphabet.mudder(prev: 'x${JSShim.repeat('a', i)}', next: 'xa'),
+            () =>
+                alphabet.mudder(start: 'x${JSShim.repeat('a', i)}', end: 'xa'),
             throwsException);
         expect(
-                () =>
-                alphabet.mudder(prev: 'xa', next: 'x${JSShim.repeat('a', i)}'),
+            () =>
+                alphabet.mudder(start: 'xa', end: 'x${JSShim.repeat('a', i)}'),
             throwsException);
       }
     });
@@ -106,19 +113,19 @@ void main() {
     });
 
     test('More #3: no need to define start/end', () {
-      var result = base36.mudder(prev: '', next: 'foo', numStrings: 30);
+      var result = base36.mudder(start: '', end: 'foo', numStrings: 30);
       expect(result.length, 30);
-      result = base36.mudder(prev: 'foo', next: '', numStrings: 30);
+      result = base36.mudder(start: 'foo', end: '', numStrings: 30);
       expect(result.length, 30);
     });
 
     test('Fix #7: specify number of divisions', () {
-      final decimal = SymbolTable(symbolsStr: '0123456789');
+      final decimal = SymbolTable(symbolsString: '0123456789');
 
-      var fine = decimal.mudder(prev: '9', numStrings: 100);
+      var fine = decimal.mudder(start: '9', numStrings: 100);
       var partialFine =
-      decimal.mudder(prev: '9', numStrings: 5, numDivisions: 101);
-      var coarse = decimal.mudder(prev: '9', numStrings: 5);
+          decimal.mudder(start: '9', numStrings: 5, numDivisions: 101);
+      var coarse = decimal.mudder(start: '9', numStrings: 5);
 
       expect(allLessThan(fine), true);
       expect(allLessThan(partialFine), true);
@@ -127,10 +134,10 @@ void main() {
       expect(partialFine.length, coarse.length);
       expect(partialFine.toString() != coarse.toString(), true);
 
-      fine = decimal.mudder(prev: '9', next: '8', numStrings: 100);
+      fine = decimal.mudder(start: '9', end: '8', numStrings: 100);
       partialFine = decimal.mudder(
-          prev: '9', next: '8', numStrings: 5, numDivisions: 101);
-      coarse = decimal.mudder(prev: '9', next: '8', numStrings: 5);
+          start: '9', end: '8', numStrings: 5, numDivisions: 101);
+      coarse = decimal.mudder(start: '9', end: '8', numStrings: 5);
 
       expect(allGreaterThan(fine), true);
       expect(allGreaterThan(partialFine), true);
@@ -144,8 +151,8 @@ void main() {
     });
 
     test('Fix #8: better default end', () {
-      var result = base36.mudder(prev: JSShim.repeat('z', 10))[0] !=
-          base36.mudder(prev: JSShim.repeat('z', 15))[0];
+      var result = base36.mudder(start: JSShim.repeat('z', 10))[0] !=
+          base36.mudder(start: JSShim.repeat('z', 15))[0];
       expect(result, true);
     });
   });
@@ -153,8 +160,8 @@ void main() {
   group('mudder tests', () {
     group('test mudder', () {
       test('test invalid prev and next', () {
-        expect(() => base62.mudder(prev: 1), throwsException);
-        expect(() => base62.mudder(next: 1), throwsException);
+        expect(() => base62.mudder(start: 1), throwsException);
+        expect(() => base62.mudder(start: 1), throwsException);
       });
 
       test('test alphabet mudder simple ', () {
@@ -170,19 +177,19 @@ void main() {
       });
 
       test('test base62 mudder prev 1', () {
-        expect(base62.mudder(prev: "1"), ["V"]);
+        expect(base62.mudder(start: "1"), ["V"]);
       });
 
       test('test base62 mudder prev [1]', () {
-        expect(base62.mudder(prev: ["1"]), ["V"]);
+        expect(base62.mudder(start: ["1"]), ["V"]);
       });
 
       test('test base62 mudder next 1', () {
-        expect(base62.mudder(next: "1"), ["0V"]);
+        expect(base62.mudder(end: "1"), ["0V"]);
       });
 
       test('test base62 mudder next [1]', () {
-        expect(base62.mudder(next: ["1"]), ["0V"]);
+        expect(base62.mudder(end: ["1"]), ["0V"]);
       });
 
       test('test base62 mudder 3 values ', () {
@@ -192,17 +199,17 @@ void main() {
       });
 
       test('test base10 mudder', () {
-        final result = base10.mudder(prev: "0", next: "2");
+        final result = base10.mudder(start: "0", end: "2");
         expect(result.length, 1);
         expect(result[0], "1");
 
-        final result2 = base10.mudder(prev: "0", next: "9");
+        final result2 = base10.mudder(start: "0", end: "9");
         expect(result2.length, 1);
         expect(result2[0], "4");
       });
 
       test('test base36 mudder', () {
-        final result = base36.mudder(prev: "a", next: "c");
+        final result = base36.mudder(start: "a", end: "c");
         expect(result.length, 1);
         expect(result[0], "b");
       });
@@ -223,7 +230,7 @@ void main() {
 
       test('test SymbolTable constructor with string', () {
         final string = "abcdefg";
-        final symbolTable = SymbolTable(symbolsStr: string);
+        final symbolTable = SymbolTable(symbolsString: string);
         expect(symbolTable.maxBase == string.length, true);
       });
     });
