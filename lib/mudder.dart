@@ -55,8 +55,6 @@ class SymbolTable {
           key: (element) => element,
           value: (element) => num2sym.indexOf(element));
     }
-    maxBase = num2sym.length;
-    _isPrefixCode = isPrefixCode(num2sym);
 
     // `symbolsMap`
     var symbolsValuesSet = Set.of(sym2num.values);
@@ -66,6 +64,9 @@ class SymbolTable {
             '${num2sym.length} symbols given but $i not found in symbol table');
       }
     }
+
+    maxBase = num2sym.length;
+    _isPrefixCode = isPrefixCode(num2sym);
   }
 
   List<String> mudder({

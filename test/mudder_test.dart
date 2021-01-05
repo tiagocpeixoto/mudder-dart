@@ -5,6 +5,7 @@ import 'package:test/test.dart';
 
 void main() {
   group('mudderjs original tests', () {
+
     test('readme', () {
       final hex = SymbolTable(symbolsString: '0123456789abcdef');
       final hexStrings = hex.mudder(start: 'ffff', end: 'fe0f', numStrings: 3);
