@@ -12,7 +12,6 @@ Generate lexicographically-spaced strings between two strings from pre-defined a
     final hex = SymbolTable(symbolsString: '0123456789abcdef');
     final hexStrings = hex.mudder(start: 'ffff', end: 'fe0f', numStrings: 3);
     print(hexStrings); // [ 'ff8', 'ff', 'fe8' ]
-    
 ```
 
 - As a convenience, the following pre-generated symbol table are provided:

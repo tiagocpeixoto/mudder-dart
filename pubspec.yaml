@@ -1,9 +1,14 @@
 name: mudder_dart
+
 version: 0.1.0
+
 description: >-
-  Dart version of mudderjs.
+  Dart version of mudderjs (https://github.com/fasiha/mudderjs).
+
 homepage: https://github.com/tiagocpeixoto/mudder-dart
+
 documentation: https://github.com/tiagocpeixoto/mudder-dart
+
 environment:
   sdk: '>=2.10.0 <3.0.0'
 
