@@ -4,6 +4,7 @@ Dart version of [mudderjs](https://github.com/fasiha/mudderjs).
 
 Generate lexicographically-spaced strings between two strings from pre-defined alphabets.
 
+
 ## Usage
 
 - Create a new symbol table with the list of characters you want to use. In this example, we consider lowercase hexadecimal strings:
@@ -19,6 +20,7 @@ Generate lexicographically-spaced strings between two strings from pre-defined a
     - `base62`: `0-9A-Za-z`,
     - `base36`: `0-9a-z` (lower- and upper-case accepted),
     - `alphabet`: `a-z` (lower- and upper-case accepted).
+
 
 ## API
 
