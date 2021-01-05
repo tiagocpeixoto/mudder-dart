@@ -1,4 +1,4 @@
-import 'package:mudder_dart/mudder.dart';
+import 'package:mudder_dart/mudder_dart.dart';
 import 'package:mudder_dart/src/helpers.dart';
 import 'package:mudder_dart/src/js_shim.dart';
 import 'package:test/test.dart';

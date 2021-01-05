@@ -1,4 +1,4 @@
-import 'package:mudder_dart/mudder.dart';
+import 'package:mudder_dart/mudder_dart.dart';
 
 void main() {
   final hex = SymbolTable(symbolsString: '0123456789abcdef');
