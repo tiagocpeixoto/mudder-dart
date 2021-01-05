@@ -1,0 +1,198 @@
+import 'dart:collection';
+import 'dart:math';
+
+import 'package:mudder_dart/src/helpers.dart';
+import 'package:mudder_dart/src/js_shim.dart';
+
+/* Constructor:
+symbolsArr is a string (split into an array) or an array. In either case, it
+maps numbers (array indexes) to stringy symbols. Its length defines the max
+radix the symbol table can handle.
+
+symbolsMap is optional, but goes the other way, so it can be an object or Map.
+Its keys are stringy symbols and its values are numbers. If omitted, the
+implied map goes from the indexes of symbolsArr to the symbols.
+
+When symbolsMap is provided, its values are checked to ensure that each number
+from 0 to max radix minus one is present. If you had a symbol as an entry in
+symbolsArr, then number->string would use that symbol, but the resulting
+string couldn't be parsed because that symbol wasn't in symbolMap.
+*/
+class SymbolTable {
+  List<String> num2sym;
+  Map<String, int> sym2num;
+  int maxBase;
+
+  bool _isPrefixCode;
+
+  SymbolTable({
+    List<String> symbolsArr,
+    String symbolsStr,
+    Map<String, int> symbolsMap,
+  }) {
+    // Condition the input `symbolsArr`
+    if (symbolsArr != null) {
+      num2sym = symbolsArr;
+    } else {
+      if (symbolsStr != null && symbolsStr.isNotEmpty) {
+        num2sym = symbolsStr.split('');
+      } else {
+        throw Exception('symbolsArr and symbolsStr must not be null or empty');
+      }
+    }
+
+    // Condition the second input, `symbolsMap`. If no symbolsMap passed in,
+    // make it by inverting symbolsArr. If it's an object (and not a Map),
+    // convert its own-properties to a Map.
+    if (symbolsMap != null) {
+      sym2num = symbolsMap;
+    } else {
+      sym2num = HashMap();
+      // for (var i = 0; i < num2sym.length; i++) {
+      //   sym2num.putIfAbsent(num2sym[i], () => i);
+      // }
+      sym2num = HashMap.fromIterable(num2sym,
+          key: (element) => element,
+          value: (element) => num2sym.indexOf(element));
+    }
+    maxBase = num2sym.length;
+    _isPrefixCode = isPrefixCode(num2sym);
+
+    // `symbolsMap`
+    var symbolsValuesSet = Set.of(sym2num.values);
+    for (var i = 0; i < num2sym.length; i++) {
+      if (!symbolsValuesSet.contains(i)) {
+        throw Exception(
+            '${num2sym.length} symbols given but $i not found in symbol table');
+      }
+    }
+  }
+
+  List<String> mudder({
+    dynamic prev,
+    dynamic next,
+    int numStrings,
+    int base,
+    int numDivisions,
+  }) {
+    if (prev != null && prev is! String && prev is! List<String>) {
+      throw Exception('prev param must be of type String or List<String>');
+    }
+
+    if (next != null && next is! String && next is! List<String>) {
+      throw Exception('next param must be of type String or List<String>');
+    }
+
+    prev ??= num2sym[0];
+    next ??= JSShim.repeat(num2sym[num2sym.length - 1], prev.length + 6);
+    numStrings ??= 1;
+    base ??= maxBase;
+    numDivisions ??= numStrings + 1;
+
+    final truncated = truncateLexHigher(prev, next);
+    prev = truncated[0];
+    next = truncated[1];
+    final prevDigits = stringToDigits(prev);
+    final nextDigits = stringToDigits(next);
+    final intermediateDigits =
+    longLinspace(prevDigits, nextDigits, base, numStrings, numDivisions);
+    final finalDigits = intermediateDigits
+        .map((v) => v.res..addAll(roundFraction(v.rem, v.den, base)))
+        .toList();
+    finalDigits.insert(0, prevDigits);
+    finalDigits.add(nextDigits);
+    return chopSuccessiveDigits(finalDigits)
+        .sublist(1, finalDigits.length - 1)
+        .map(digitsToString)
+        .toList();
+  }
+
+  List<int> roundFraction(int numerator, int denominator, int base) {
+    base = base ?? maxBase;
+    var places = (log(denominator) / log(base)).ceil();
+    var scale = pow(base, places);
+    var scaled = (numerator / denominator * scale).round();
+    var digits = numberToDigits(scaled, base);
+    return leftPad(digits, places, 0);
+  }
+
+  List<int> numberToDigits(int num, [int base]) {
+    base ??= maxBase;
+    var digits = <int>[];
+    while (num >= 1) {
+      digits.add(num % base);
+      num = (num / base).floor();
+    }
+    return digits.isNotEmpty ? digits.reversed.toList() : [0];
+  }
+
+  String digitsToString(List<int> digits) {
+    return digits.map((n) => num2sym[n]).join('');
+  }
+
+  List<int> stringToDigits(dynamic string) {
+    if (string is String) {
+      if (_isPrefixCode == null || !_isPrefixCode) {
+        throw Exception(
+            'parsing string without prefix code is unsupported. Pass in array '
+                'of stringy symbols?');
+      }
+      final re = RegExp('(${List.from(sym2num.keys).join('|')})');
+      return re
+          .allMatches(string)
+          .map((e) => e.input.substring(e.start, e.end))
+          .map((symbol) => sym2num[symbol])
+          .toList();
+    }
+
+    if (string is List<String>) {
+      return string.map((e) => sym2num[e]).toList();
+    }
+
+    throw Exception("param must be of type String or List<String>");
+  }
+
+  int digitsToNumber(List<int> digits, [int base]) {
+    base ??= maxBase;
+    var currBase = 1;
+    return JSShim.reduceRight(digits, (prev, curr, index, list) {
+      var ret = prev + curr * currBase;
+      currBase *= base;
+      return ret;
+    }, 0);
+  }
+
+  String numberToString(int num, [int base]) {
+    return digitsToString(numberToDigits(num, base));
+  }
+
+  int stringToNumber(String num, [int base]) {
+    return digitsToNumber(stringToDigits(num), base);
+  }
+}
+
+
+final base10 = SymbolTable(symbolsArr: iter('0', 10));
+
+final base62 = SymbolTable(
+    symbolsArr: iter('0', 10)..addAll(iter('A', 26))..addAll(iter('a', 26)));
+
+// Base36 should use lowercase since that’s what Number.toString outputs.
+final _base36arr = iter('0', 10)..addAll(iter('a', 26));
+final _base36keys = [..._base36arr]..addAll(iter('A', 26));
+final _base36vals = range(10)
+  ..addAll(range(26).map((i) => i + 10))
+  ..addAll(range(26).map((i) => i + 10));
+final base36 = SymbolTable(
+    symbolsArr: _base36arr,
+    symbolsMap: Map.fromEntries(zip(_base36keys, _base36vals)));
+
+final alphabet = SymbolTable(
+  symbolsArr: iter('a', 26),
+  symbolsMap: Map.fromEntries(
+    zip(
+      iter('a', 26)..addAll(iter('A', 26)),
+      range(26)..addAll(range(26)),
+    ),
+  ),
+);
