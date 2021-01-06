@@ -49,6 +49,22 @@ bool _isPrefixCodeLogLinear(List<String> _strings) {
 
 bool Function(List<String>) isPrefixCode = _isPrefixCodeLogLinear;
 
+bool isValidString(dynamic string) {
+  return string is List<String>
+      ? string.isNotEmpty
+      : string is String
+          ? string.trim().isNotEmpty
+          : false;
+}
+
+dynamic notEmptyString(dynamic string) {
+  return isValidString(string)
+      ? string is String
+          ? string.trim()
+          : string
+      : null;
+}
+
 List<String> iter(String char, int len) => List.generate(
       len,
       (i) => String.fromCharCode(char.codeUnitAt(0) + i),

@@ -5,6 +5,26 @@ void main() {
   group('helpers tests', () {
     final digits = <int>[1, 2, 3];
 
+    test('test isValidString', () {
+      expect(isValidString(null), false);
+      expect(isValidString(""), false);
+      expect(isValidString(" "), false);
+      expect(isValidString([]), false);
+      expect(isValidString("a"), true);
+      expect(isValidString(" a "), true);
+      expect(isValidString(["a"]), true);
+    });
+
+    test('test notEmptyString', () {
+      expect(notEmptyString(null), null);
+      expect(notEmptyString(""), null);
+      expect(notEmptyString(" "), null);
+      expect(notEmptyString("a"), "a");
+      expect(notEmptyString(" a "), "a");
+      expect(notEmptyString([]), null);
+      expect(notEmptyString(["a"]), ["a"]);
+    });
+
     test('test iter', () {
       final result = iter('0', 3);
       expect(result, ['0', '1', '2']);

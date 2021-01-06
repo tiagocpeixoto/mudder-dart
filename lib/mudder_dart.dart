@@ -84,8 +84,9 @@ class SymbolTable {
       throw Exception('end param must be of type String or List<String>');
     }
 
-    start ??= num2sym[0];
-    end ??= JSShim.repeat(num2sym[num2sym.length - 1], start.length + 6);
+    start = notEmptyString(start) ?? num2sym[0];
+    end = notEmptyString(end) ??
+        JSShim.repeat(num2sym[num2sym.length - 1], start.length + 6);
     numStrings ??= 1;
     base ??= maxBase;
     numDivisions ??= numStrings + 1;

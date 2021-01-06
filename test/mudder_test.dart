@@ -160,9 +160,9 @@ void main() {
 
   group('mudder tests', () {
     group('test mudder', () {
-      test('test invalid prev and next', () {
+      test('test invalid start and end', () {
         expect(() => base62.mudder(start: 1), throwsException);
-        expect(() => base62.mudder(start: 1), throwsException);
+        expect(() => base62.mudder(end: 1), throwsException);
       });
 
       test('test alphabet mudder simple ', () {
@@ -177,19 +177,35 @@ void main() {
         expect(result[0], "U");
       });
 
-      test('test base62 mudder prev 1', () {
+      test('test base62 mudder start v and empty end string', () {
+        expect(base62.mudder(start: "v", end: ""), ["x"]);
+      });
+
+      test('test base62 mudder start v only', () {
+        expect(base62.mudder(start: "v"), ["x"]);
+      });
+
+      test('test base62 mudder empty start and end v', () {
+        expect(base62.mudder(start: "", end: "v"), ["S"]);
+      });
+
+      test('test base62 mudder end v only', () {
+        expect(base62.mudder(end: "v"), ["S"]);
+      });
+
+      test('test base62 mudder start 1', () {
         expect(base62.mudder(start: "1"), ["V"]);
       });
 
-      test('test base62 mudder prev [1]', () {
+      test('test base62 mudder start [1]', () {
         expect(base62.mudder(start: ["1"]), ["V"]);
       });
 
-      test('test base62 mudder next 1', () {
+      test('test base62 mudder end 1', () {
         expect(base62.mudder(end: "1"), ["0V"]);
       });
 
-      test('test base62 mudder next [1]', () {
+      test('test base62 mudder end [1]', () {
         expect(base62.mudder(end: ["1"]), ["0V"]);
       });
 
