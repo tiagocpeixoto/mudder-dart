@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 void main() {
   group('js_shim tests', () {
     final string = "abc";
-    
+
     test('test repeat', () {
       final result = JSShim.repeat(string, 3);
       expect(result, string + string + string);
@@ -16,14 +16,14 @@ void main() {
     test('test reduceRight', () {
       final array = [1, 2, 3];
       var result = JSShim.reduceRight(
-          array, (prev, curr, index, list) => prev + curr, 20);
+          array, (dynamic prev, dynamic curr, index, list) => prev + curr, 20);
       expect(result, 26);
     });
 
     test('test reduceRight without reduced result', () {
       final array = [1, 2, 3];
       var result = 20;
-      JSShim.reduceRight(array, (_, curr, index, list) {
+      JSShim.reduceRight(array, (dynamic _, int curr, index, list) {
         result += curr;
       }, null);
       expect(result, 26);

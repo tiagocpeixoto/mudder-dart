@@ -5,10 +5,10 @@ import 'package:mudder_dart/src/js_shim.dart';
 class Div {
   final List<int> res;
   final int rem;
-  final int den;
-  final bool carry;
+  final int? den;
+  final bool? carry;
 
-  Div({this.res, this.rem, this.den, this.carry});
+  Div({required this.res, required this.rem, this.den, this.carry});
 }
 
 // bool _isPrefixCode(List<String> strings) {
@@ -29,8 +29,8 @@ class Div {
 //   return true;
 // }
 
-bool _isPrefixCodeLogLinear(List<String> _strings) {
-  final strings = [..._strings]..sort(); // set->array or array->copy
+bool _isPrefixCodeLogLinear(List<String>? _strings) {
+  final strings = [..._strings!]..sort(); // set->array or array->copy
   // strings.sort();
   for (var i = 0; i < strings.length; i++) {
     final curr = strings[i];
@@ -47,7 +47,7 @@ bool _isPrefixCodeLogLinear(List<String> _strings) {
   return true;
 }
 
-bool Function(List<String>) isPrefixCode = _isPrefixCodeLogLinear;
+bool Function(List<String>?) isPrefixCode = _isPrefixCodeLogLinear;
 
 bool isValidString(dynamic string) {
   return string is List<String>
@@ -74,14 +74,14 @@ List<int> range(int len) {
   return List.generate(len, (i) => i);
 }
 
-List<int> leftPad(List<int> digits, int finalLength, [int val]) {
+List<int> leftPad(List<int> digits, int finalLength, [int? val]) {
   final padLen = max(0, finalLength - digits.length);
   return List.filled(padLen, val ?? 0, growable: true)..addAll(digits);
 }
 
-List<int> rightPad(List<int> digits, int finalLength, [int val]) {
+List<int> rightPad(List<int> digits, int finalLength, [int? val]) {
   final padLen = max(0, finalLength - digits.length);
-  return digits.toList()..addAll(List.filled(padLen, val ?? 0));
+  return digits.toList()..addAll(List.filled(padLen, val ?? 0)) ;
 }
 
 List<MapEntry<String, int>> zip(List<String> start, List<int> end) {
@@ -182,27 +182,27 @@ Div longSubSameLen(
   return Div(res: ret, rem: 0, den: den);
 }
 
-///
 /// @param {number[]} start array of digits
 /// @param {number[]} end array of digits
 /// @param {number} base
 /// @param {number} rem remainder
 /// @param {number} den denominator under remainder
-Div longAddSameLen(List<int> start, List<int> end, int base, int rem, int den) {
+Div longAddSameLen(
+    List<int?> start, List<int?> end, int base, int rem, int den) {
   if (start.length != end.length) {
     throw Exception('same length arrays needed');
   }
-  var carry = rem >= den, res = end.toList();
+  dynamic carry = rem >= den, res = end.toList();
   if (carry) {
     rem -= den;
   }
-  JSShim.reduceRight(start, (_, ai, index, list) {
+  JSShim.reduceRight(start, (dynamic _, dynamic ai, index, list) {
     final result = ai + end[index] + (carry ? 1 : 0);
     carry = result >= base;
     res[index] = carry ? result - base : result;
     return null;
   }, null);
-  return Div(res: res, rem: rem, den: den, carry: carry);
+  return Div(res: res as List<int>, rem: rem, den: den, carry: carry);
 }
 
 /// Returns `(start + (end-start)/M*n)` for n=[1, 2, ..., N], where `N<M`.
@@ -219,7 +219,8 @@ List<Div> longLinspace(List<int> start, List<int> end, int base, int N, int M) {
     end = rightPad(end, start.length);
   }
   if (start.length == end.length &&
-      JSShim.every(start, (prevElem, index) => prevElem == end[index])) {
+      JSShim.every(
+          start, (dynamic prevElem, index) => prevElem == end[index])) {
     throw Exception('Start and end strings lexicographically inseparable');
   }
   final prevDiv = longDiv(start, M, base);
@@ -239,10 +240,10 @@ List<Div> longLinspace(List<int> start, List<int> end, int base, int N, int M) {
   return ret;
 }
 
-List<int> chopDigits(List<int> rock, List<int> water) {
+List<int> chopDigits(List<int>? rock, List<int> water) {
   for (var idx = 0; idx < water.length; idx++) {
     final waterValue = idx < water.length ? water[idx] : null;
-    final rockValue = idx < rock.length ? rock[idx] : null;
+    final rockValue = idx < rock!.length ? rock[idx] : null;
     if (waterValue != null && waterValue != 0 && rockValue != waterValue) {
       return water.sublist(0, idx + 1);
     }
@@ -261,13 +262,13 @@ bool lexicographicLessThanArray(List<int> start, List<int> end) {
   return start.length < end.length;
 }
 
-List<List<int>> chopSuccessiveDigits(List<List<int>> digits) {
+List<List<int>>? chopSuccessiveDigits(List<List<int>> digits) {
   final reversed = !lexicographicLessThanArray(digits[0], digits[1]);
   if (reversed) {
     digits = digits.reversed.toList();
   }
   final sliced = digits.sublist(1);
-  var result = sliced.fold([digits[0]], (accum, curr) {
+  var result = sliced.fold([digits[0]], (dynamic accum, curr) {
     final arrayToConcat = [chopDigits(accum[accum.length - 1], curr)];
     return accum..addAll(arrayToConcat);
   });

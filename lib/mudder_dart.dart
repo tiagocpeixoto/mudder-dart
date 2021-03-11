@@ -19,16 +19,16 @@ symbolsArr, then number->string would use that symbol, but the resulting
 string couldn't be parsed because that symbol wasn't in symbolMap.
 */
 class SymbolTable {
-  List<String> num2sym;
-  Map<String, int> sym2num;
-  int maxBase;
+  late List<String> num2sym;
+  late Map<String, int> sym2num;
+  late int maxBase;
 
-  bool _isPrefixCode;
+  bool? _isPrefixCode;
 
   SymbolTable({
-    String symbolsString,
-    List<String> symbolsArray,
-    Map<String, int> symbolsMap,
+    String? symbolsString,
+    List<String>? symbolsArray,
+    Map<String, int>? symbolsMap,
   }) {
     // Condition the input `symbolsArr`
     if (symbolsArray != null) {
@@ -72,9 +72,9 @@ class SymbolTable {
   List<String> mudder({
     dynamic start,
     dynamic end,
-    int numStrings,
-    int base,
-    int numDivisions,
+    int? numStrings,
+    int? base,
+    int? numDivisions,
   }) {
     if (start != null && start is! String && start is! List<String>) {
       throw Exception('start param must be of type String or List<String>');
@@ -97,19 +97,19 @@ class SymbolTable {
     final prevDigits = stringToDigits(start);
     final nextDigits = stringToDigits(end);
     final intermediateDigits =
-        longLinspace(prevDigits, nextDigits, base, numStrings, numDivisions);
+    longLinspace(prevDigits, nextDigits, base, numStrings, numDivisions);
     final finalDigits = intermediateDigits
-        .map((v) => v.res..addAll(roundFraction(v.rem, v.den, base)))
+        .map((v) => v.res..addAll(roundFraction(v.rem, v.den!, base)))
         .toList();
     finalDigits.insert(0, prevDigits);
     finalDigits.add(nextDigits);
-    return chopSuccessiveDigits(finalDigits)
+    return chopSuccessiveDigits(finalDigits)!
         .sublist(1, finalDigits.length - 1)
         .map(digitsToString)
         .toList();
   }
 
-  List<int> roundFraction(int numerator, int denominator, int base) {
+  List<int> roundFraction(int numerator, int denominator, int? base) {
     base = base ?? maxBase;
     var places = (log(denominator) / log(base)).ceil();
     var scale = pow(base, places);
@@ -118,7 +118,7 @@ class SymbolTable {
     return leftPad(digits, places, 0);
   }
 
-  List<int> numberToDigits(int num, [int base]) {
+  List<int> numberToDigits(int num, [int? base]) {
     base ??= maxBase;
     var digits = <int>[];
     while (num >= 1) {
@@ -134,41 +134,50 @@ class SymbolTable {
 
   List<int> stringToDigits(dynamic string) {
     if (string is String) {
-      if (_isPrefixCode == null || !_isPrefixCode) {
+      if (_isPrefixCode == null || !_isPrefixCode!) {
         throw Exception(
             'parsing string without prefix code is unsupported. Pass in array '
-            'of stringy symbols?');
+                'of stringy symbols?');
       }
       final re = RegExp('(${List.from(sym2num.keys).join('|')})');
       return re
           .allMatches(string)
-          .map((e) => e.input.substring(e.start, e.end))
-          .map((symbol) => sym2num[symbol])
-          .toList();
+          .map<String>((e) => e.input.substring(e.start, e.end))
+          .map<int>((symbol) {
+        final num = sym2num[symbol];
+        if (num != null) return num;
+        throw Exception('Undefined value for sym2num with key $symbol');
+      }).toList();
     }
 
     if (string is List<String>) {
-      return string.map((e) => sym2num[e]).toList();
+      return string.map((e) {
+        final num = sym2num[e];
+        if (num != null) return num;
+        throw Exception('Undefined value for sym2num with key $e');
+      }).toList()
+      ;
     }
 
     throw Exception("param must be of type String or List<String>");
   }
 
-  int digitsToNumber(List<int> digits, [int base]) {
+  int? digitsToNumber(List<int> digits, [int? base]) {
     base ??= maxBase;
     var currBase = 1;
-    return JSShim.reduceRight(digits, (prev, curr, index, list) {
-      var ret = prev + curr * currBase;
-      currBase *= base;
-      return ret;
-    }, 0);
+    return JSShim.reduceRight(digits,
+            (dynamic prev, dynamic curr, index, list) {
+          var ret = prev + curr * currBase;
+          currBase *= base!;
+          return ret;
+        }, 0);
   }
 
-  String numberToString(int num, [int base]) {
+  String numberToString(int num, [int? base]) {
     return digitsToString(numberToDigits(num, base));
   }
 
-  int stringToNumber(String num, [int base]) {
+  int? stringToNumber(String num, [int? base]) {
     return digitsToNumber(stringToDigits(num), base);
   }
 }
@@ -176,14 +185,15 @@ class SymbolTable {
 final base10 = SymbolTable(symbolsArray: iter('0', 10));
 
 final base62 = SymbolTable(
-    symbolsArray: iter('0', 10)..addAll(iter('A', 26))..addAll(iter('a', 26)));
+    symbolsArray: iter('0', 10)
+      ..addAll(iter('A', 26))..addAll(iter('a', 26)));
 
 // Base36 should use lowercase since that’s what Number.toString outputs.
-final _base36arr = iter('0', 10)..addAll(iter('a', 26));
+final _base36arr = iter('0', 10)
+  ..addAll(iter('a', 26));
 final _base36keys = [..._base36arr]..addAll(iter('A', 26));
 final _base36vals = range(10)
-  ..addAll(range(26).map((i) => i + 10))
-  ..addAll(range(26).map((i) => i + 10));
+  ..addAll(range(26).map((i) => i + 10))..addAll(range(26).map((i) => i + 10));
 final base36 = SymbolTable(
     symbolsArray: _base36arr,
     symbolsMap: Map.fromEntries(zip(_base36keys, _base36vals)));
@@ -192,8 +202,10 @@ final alphabet = SymbolTable(
   symbolsArray: iter('a', 26),
   symbolsMap: Map.fromEntries(
     zip(
-      iter('a', 26)..addAll(iter('A', 26)),
-      range(26)..addAll(range(26)),
+      iter('a', 26)
+        ..addAll(iter('A', 26)),
+      range(26)
+        ..addAll(range(26)),
     ),
   ),
 );

@@ -5,13 +5,11 @@ import 'package:test/test.dart';
 
 void main() {
   group('mudderjs original tests', () {
-
     test('readme', () {
       final hex = SymbolTable(symbolsString: '0123456789abcdef');
       final hexStrings = hex.mudder(start: 'ffff', end: 'fe0f', numStrings: 3);
       print(hexStrings);
     });
-
 
     test('Reasonable values', () {
       final decimal = SymbolTable(symbolsString: '0123456789');
@@ -26,17 +24,17 @@ void main() {
         final rev = decimal.mudder(start: '2', end: '1', numStrings: num);
         expect(rev.toList().reversed.join(''), fwd.join(''));
         expect(
-            fwd.fold(true, (accum, curr) {
+            fwd.fold(true, (dynamic accum, curr) {
               final i = fwd.indexWhere((e) => e == curr);
-              return i > 0 && i < fwd.length && fwd[i - 1] != null
+              return i > 0 && i < fwd.length
                   ? accum && (fwd[i - 1].compareTo(curr) < 0)
                   : true;
             }),
             true);
         expect(
-            rev.fold(true, (accum, curr) {
+            rev.fold(true, (dynamic accum, curr) {
               final i = rev.indexWhere((e) => e == curr);
-              return i > 0 && i < rev.length && rev[i - 1] != null
+              return i > 0 && i < rev.length
                   ? accum && (rev[i - 1].compareTo(curr) > 0)
                   : true;
             }),
@@ -45,7 +43,7 @@ void main() {
     });
 
     test('Constructor with maps', () {
-      final arr = '_,I,II,III,IV,V'.split(',');
+      final List<String> arr = '_,I,II,III,IV,V'.split(',');
       final map = Map.of({
         "_": 0,
         "I": 1,
@@ -110,6 +108,7 @@ void main() {
           return result;
         }), true);
       }
+      // ignore: unnecessary_null_comparison
       expect(alphabet.mudder() != null, true);
     });
 
