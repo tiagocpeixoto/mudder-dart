@@ -7,8 +7,10 @@ void main() {
   group('mudderjs original tests', () {
     test('readme', () {
       final hex = SymbolTable(symbolsString: '0123456789abcdef');
+      hex.mudder(start: 'ffff', end: 'fe0f', numStrings: 3);
       final hexStrings = hex.mudder(start: 'ffff', end: 'fe0f', numStrings: 3);
-      print(hexStrings);
+      // print(hexStrings);
+      expect(hexStrings.length, 3);
     });
 
     test('Reasonable values', () {

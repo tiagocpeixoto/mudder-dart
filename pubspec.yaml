@@ -3,7 +3,7 @@ name: mudder_dart
 version: 0.2.0-nullsafety.0
 
 description: >-
-  Dart version of mudderjs (https://github.com/fasiha/mudderjs).
+  Dart port of mudderjs (https://github.com/fasiha/mudderjs).
 
 homepage: https://github.com/tiagocpeixoto/mudder-dart
 
