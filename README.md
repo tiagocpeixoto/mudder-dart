@@ -1,5 +1,8 @@
 # mudder-dart
 
+[![pub package](https://img.shields.io/pub/v/mudder_dart.svg)](https://pub.dartlang.org/packages/mudder_dart)
+[![style: effective dart](https://img.shields.io/badge/style-effective_dart-40c4ff.svg)](https://pub.dev/packages/effective_dart)
+
 Dart version of [mudderjs](https://github.com/fasiha/mudderjs).
 
 Generate lexicographically-spaced strings between two strings from pre-defined alphabets.

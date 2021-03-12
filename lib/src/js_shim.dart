@@ -15,7 +15,7 @@ class JSShim {
   }
 
   static dynamic reduceRight<T, E>(
-      List<E> list, fn(T? prev, E curr, int index, List<E> list),
+      List<E> list, T? fn(T? prev, E curr, int index, List<E> list),
       [T? initialValue]) {
     var value = initialValue;
     for (var index = list.length - 1; index > -1; index--) {

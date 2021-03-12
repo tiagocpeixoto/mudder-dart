@@ -81,7 +81,7 @@ List<int> leftPad(List<int> digits, int finalLength, [int? val]) {
 
 List<int> rightPad(List<int> digits, int finalLength, [int? val]) {
   final padLen = max(0, finalLength - digits.length);
-  return digits.toList()..addAll(List.filled(padLen, val ?? 0)) ;
+  return digits.toList()..addAll(List.filled(padLen, val ?? 0));
 }
 
 List<MapEntry<String, int>> zip(List<String> start, List<int> end) {
@@ -187,22 +187,22 @@ Div longSubSameLen(
 /// @param {number} base
 /// @param {number} rem remainder
 /// @param {number} den denominator under remainder
-Div longAddSameLen(
-    List<int?> start, List<int?> end, int base, int rem, int den) {
+Div longAddSameLen(List<int> start, List<int> end, int base, int rem, int den) {
   if (start.length != end.length) {
     throw Exception('same length arrays needed');
   }
-  dynamic carry = rem >= den, res = end.toList();
+  var carry = rem >= den;
+  var res = end.toList();
   if (carry) {
     rem -= den;
   }
-  JSShim.reduceRight(start, (dynamic _, dynamic ai, index, list) {
+  JSShim.reduceRight<dynamic, int>(start, (_, ai, index, list) {
     final result = ai + end[index] + (carry ? 1 : 0);
     carry = result >= base;
     res[index] = carry ? result - base : result;
     return null;
   }, null);
-  return Div(res: res as List<int>, rem: rem, den: den, carry: carry);
+  return Div(res: res, rem: rem, den: den, carry: carry);
 }
 
 /// Returns `(start + (end-start)/M*n)` for n=[1, 2, ..., N], where `N<M`.
@@ -268,7 +268,7 @@ List<List<int>>? chopSuccessiveDigits(List<List<int>> digits) {
     digits = digits.reversed.toList();
   }
   final sliced = digits.sublist(1);
-  var result = sliced.fold([digits[0]], (dynamic accum, curr) {
+  var result = sliced.fold<List<List<int>>>([digits[0]], (accum, curr) {
     final arrayToConcat = [chopDigits(accum[accum.length - 1], curr)];
     return accum..addAll(arrayToConcat);
   });
@@ -279,8 +279,16 @@ List<List<int>>? chopSuccessiveDigits(List<List<int>> digits) {
 }
 
 List<dynamic> truncateLexHigher(dynamic lo, dynamic hi) {
-  String loStr = lo is List<String> ? lo.join("") : lo;
-  String hiStr = hi is List<String> ? hi.join("") : hi;
+  var loStr = lo is List<String>
+      ? lo.join("")
+      : lo is String
+          ? lo
+          : throw Exception("Value is not a List<String> nor a String");
+  var hiStr = hi is List<String>
+      ? hi.join("")
+      : hi is String
+          ? hi
+          : throw Exception("Value is not a List<String> nor a String");
 
   final swapped = loStr.compareTo(hiStr) > 0;
   if (swapped) {

@@ -52,8 +52,8 @@ class SymbolTable {
       //   sym2num.putIfAbsent(num2sym[i], () => i);
       // }
       sym2num = HashMap.fromIterable(num2sym,
-          key: (element) => element,
-          value: (element) => num2sym.indexOf(element));
+          key: (element) => element as String,
+          value: (element) => num2sym.indexOf(element as String));
     }
 
     // `symbolsMap`
@@ -85,8 +85,18 @@ class SymbolTable {
     }
 
     start = notEmptyString(start) ?? num2sym[0];
+
+    int? length;
+    if (start is String) {
+      length = start.length;
+    } else if (start is List) {
+      length = start.length;
+    } else {
+      throw Exception('Illegal state. Length must not be null');
+    }
+
     end = notEmptyString(end) ??
-        JSShim.repeat(num2sym[num2sym.length - 1], start.length + 6);
+        JSShim.repeat(num2sym[num2sym.length - 1], length + 6);
     numStrings ??= 1;
     base ??= maxBase;
     numDivisions ??= numStrings + 1;
@@ -97,7 +107,7 @@ class SymbolTable {
     final prevDigits = stringToDigits(start);
     final nextDigits = stringToDigits(end);
     final intermediateDigits =
-    longLinspace(prevDigits, nextDigits, base, numStrings, numDivisions);
+        longLinspace(prevDigits, nextDigits, base, numStrings, numDivisions);
     final finalDigits = intermediateDigits
         .map((v) => v.res..addAll(roundFraction(v.rem, v.den!, base)))
         .toList();
@@ -137,7 +147,7 @@ class SymbolTable {
       if (_isPrefixCode == null || !_isPrefixCode!) {
         throw Exception(
             'parsing string without prefix code is unsupported. Pass in array '
-                'of stringy symbols?');
+            'of stringy symbols?');
       }
       final re = RegExp('(${List.from(sym2num.keys).join('|')})');
       return re
@@ -155,8 +165,7 @@ class SymbolTable {
         final num = sym2num[e];
         if (num != null) return num;
         throw Exception('Undefined value for sym2num with key $e');
-      }).toList()
-      ;
+      }).toList();
     }
 
     throw Exception("param must be of type String or List<String>");
@@ -165,12 +174,11 @@ class SymbolTable {
   int? digitsToNumber(List<int> digits, [int? base]) {
     base ??= maxBase;
     var currBase = 1;
-    return JSShim.reduceRight(digits,
-            (dynamic prev, dynamic curr, index, list) {
-          var ret = prev + curr * currBase;
-          currBase *= base!;
-          return ret;
-        }, 0);
+    return JSShim.reduceRight<dynamic, int>(digits, (prev, curr, index, list) {
+      var ret = prev + curr * currBase;
+      currBase *= base!;
+      return ret;
+    }, 0) as int?;
   }
 
   String numberToString(int num, [int? base]) {
@@ -185,15 +193,14 @@ class SymbolTable {
 final base10 = SymbolTable(symbolsArray: iter('0', 10));
 
 final base62 = SymbolTable(
-    symbolsArray: iter('0', 10)
-      ..addAll(iter('A', 26))..addAll(iter('a', 26)));
+    symbolsArray: iter('0', 10)..addAll(iter('A', 26))..addAll(iter('a', 26)));
 
 // Base36 should use lowercase since that’s what Number.toString outputs.
-final _base36arr = iter('0', 10)
-  ..addAll(iter('a', 26));
+final _base36arr = iter('0', 10)..addAll(iter('a', 26));
 final _base36keys = [..._base36arr]..addAll(iter('A', 26));
 final _base36vals = range(10)
-  ..addAll(range(26).map((i) => i + 10))..addAll(range(26).map((i) => i + 10));
+  ..addAll(range(26).map((i) => i + 10))
+  ..addAll(range(26).map((i) => i + 10));
 final base36 = SymbolTable(
     symbolsArray: _base36arr,
     symbolsMap: Map.fromEntries(zip(_base36keys, _base36vals)));
@@ -202,10 +209,8 @@ final alphabet = SymbolTable(
   symbolsArray: iter('a', 26),
   symbolsMap: Map.fromEntries(
     zip(
-      iter('a', 26)
-        ..addAll(iter('A', 26)),
-      range(26)
-        ..addAll(range(26)),
+      iter('a', 26)..addAll(iter('A', 26)),
+      range(26)..addAll(range(26)),
     ),
   ),
 );

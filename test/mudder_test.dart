@@ -26,7 +26,7 @@ void main() {
         final rev = decimal.mudder(start: '2', end: '1', numStrings: num);
         expect(rev.toList().reversed.join(''), fwd.join(''));
         expect(
-            fwd.fold(true, (dynamic accum, curr) {
+            fwd.fold<bool>(true, (accum, curr) {
               final i = fwd.indexWhere((e) => e == curr);
               return i > 0 && i < fwd.length
                   ? accum && (fwd[i - 1].compareTo(curr) < 0)
@@ -34,7 +34,7 @@ void main() {
             }),
             true);
         expect(
-            rev.fold(true, (dynamic accum, curr) {
+            rev.fold<bool>(true, (accum, curr) {
               final i = rev.indexWhere((e) => e == curr);
               return i > 0 && i < rev.length
                   ? accum && (rev[i - 1].compareTo(curr) > 0)
@@ -45,7 +45,7 @@ void main() {
     });
 
     test('Constructor with maps', () {
-      final List<String> arr = '_,I,II,III,IV,V'.split(',');
+      final arr = '_,I,II,III,IV,V'.split(',');
       final map = Map.of({
         "_": 0,
         "I": 1,
@@ -153,8 +153,11 @@ void main() {
     });
 
     test('Fix #8: better default end', () {
-      var result = base36.mudder(start: JSShim.repeat('z', 10))[0] !=
-          base36.mudder(start: JSShim.repeat('z', 15))[0];
+      final start10 = JSShim.repeat('z', 10);
+      final start15 = JSShim.repeat('z', 15);
+      final mudder10 = base36.mudder(start: start10);
+      final mudder15 = base36.mudder(start: start15);
+      var result = mudder10[0] != mudder15[0];
       expect(result, true);
     });
   });

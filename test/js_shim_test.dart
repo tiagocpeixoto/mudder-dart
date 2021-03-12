@@ -23,7 +23,7 @@ void main() {
     test('test reduceRight without reduced result', () {
       final array = [1, 2, 3];
       var result = 20;
-      JSShim.reduceRight(array, (dynamic _, int curr, index, list) {
+      JSShim.reduceRight<dynamic, int>(array, (_, curr, index, list) {
         result += curr;
       }, null);
       expect(result, 26);

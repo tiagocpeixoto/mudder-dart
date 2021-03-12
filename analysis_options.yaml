@@ -1,0 +1,16 @@
+include: package:effective_dart/analysis_options.yaml
+
+analyzer:
+  #  exclude: [build/**]
+  exclude:
+  #    - test/**
+
+  strong-mode:
+    implicit-casts: false
+  errors:
+  #    invalid_assignment: warning
+
+linter:
+  rules:
+    prefer_relative_imports: false
+    public_member_api_docs: false
