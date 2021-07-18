@@ -1,3 +1,8 @@
+# 0.3.0
+
+* Upgrade project version
+* Upgrade dependencies
+
 # 0.2.0-nullsafety.1
 
 * Fix changelog

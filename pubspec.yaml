@@ -1,6 +1,6 @@
 name: mudder_dart
 
-version: 0.2.0-nullsafety.1
+version: 0.3.0
 
 description: >-
   Dart port of mudderjs (https://github.com/fasiha/mudderjs).
@@ -10,8 +10,8 @@ homepage: https://github.com/tiagocpeixoto/mudder-dart
 documentation: https://github.com/tiagocpeixoto/mudder-dart
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: '>=2.13.0 <3.0.0'
 
 dev_dependencies:
   test: '>=1.16.5 <2.0.0'
-  effective_dart: ^1.3.1
+  effective_dart: ^1.3.2
